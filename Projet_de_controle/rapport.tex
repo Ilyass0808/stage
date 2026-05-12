@@ -1,0 +1,192 @@
+\documentclass[12pt,a4paper]{report}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{tikz-uml} % Requires tikz-uml.sty
+
+% --- Custom Colors ---
+\definecolor{primary}{RGB}{41, 128, 185}
+\definecolor{secondary}{RGB}{44, 62, 80}
+
+% --- Title Page ---
+\title{
+    \vspace{2cm}
+    \textbf{\Huge Rapport de Projet Fin de Module} \\
+    \vspace{1cm}
+    \textit{\Large Plateforme E-commerce : Projet de Contrôle}
+}
+\author{\textbf{Réalisé par : [Votre Nom]}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+% --- Chapter 1: Introduction ---
+\chapter{Introduction}
+Ce rapport présente la conception et la réalisation d'une plateforme e-commerce développée avec le framework Laravel. L'objectif est de fournir une solution complète permettant aux utilisateurs de naviguer, commander des produits et gérer leur compte, tout en offrant une interface d'administration pour la gestion du catalogue.
+
+% --- Chapter 2: Analyse des Besoins ---
+\chapter{Analyse des Besoins}
+L'analyse des besoins permet de définir les fonctionnalités principales du système.
+
+\section{Diagramme de Cas d'Utilisation}
+Le diagramme de cas d'utilisation illustre les interactions entre les acteurs (Client, Administrateur) et le système.
+
+\begin{center}
+\begin{tikzpicture}
+    \begin{umlpackage}{Système E-commerce}
+        \umlusecase[name=browse]{Consulter les produits}
+        \umlusecase[name=cart, y=-2]{Gérer le panier}
+        \umlusecase[name=order, y=-4]{Passer une commande}
+        \umlusecase[name=wishlist, y=-6]{Gérer la liste de souhaits}
+        \umlusecase[name=admin, x=5, y=-3]{Gérer le catalogue (CRUD)}
+    \end{umlpackage}
+
+    \umlactor[x=-4, y=-2]{Client}
+    \umlactor[x=10, y=-3]{Administrateur}
+
+    \umlassoc{Client}{browse}
+    \umlassoc{Client}{cart}
+    \umlassoc{Client}{order}
+    \umlassoc{Client}{wishlist}
+    \umlassoc{Administrateur}{admin}
+\end{tikzpicture}
+\end{center}
+
+% --- Chapter 3: Conception ---
+\chapter{Conception}
+La phase de conception définit la structure technique du projet.
+
+\section{Diagramme de Classe}
+Ce diagramme montre les entités du système et leurs relations.
+
+\begin{center}
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}
+    \umlclass[x=0, y=0]{User}{
+        - id : integer \\
+        - name : string \\
+        - email : string \\
+        - role : string
+    }{}
+
+    \umlclass[x=5, y=0]{Order}{
+        - id : integer \\
+        - user\_id : integer \\
+        - total : float \\
+        - status : string
+    }{}
+
+    \umlclass[x=10, y=0]{OrderItem}{
+        - id : integer \\
+        - order\_id : integer \\
+        - product\_id : integer \\
+        - quantity : integer \\
+        - price : float
+    }{}
+
+    \umlclass[x=10, y=-5]{Product}{
+        - id : integer \\
+        - name : string \\
+        - description : text \\
+        - price : float \\
+        - stock : integer \\
+        - image : string
+    }{}
+
+    \umlclass[x=5, y=-5]{Category}{
+        - id : integer \\
+        - name : string
+    }{}
+
+    \umlclass[x=0, y=-5]{Wishlist}{
+        - id : integer \\
+        - user\_id : integer \\
+        - product\_id : integer
+    }{}
+
+    \umluniassoc[arg=passes, pos=0.5]{User}{Order}
+    \umluniassoc[arg=contains, pos=0.5]{Order}{OrderItem}
+    \umluniassoc[arg=references, pos=0.5]{OrderItem}{Product}
+    \umluniassoc[arg=belongs to, pos=0.5]{Product}{Category}
+    \umluniassoc[arg=owns, pos=0.5]{User}{Wishlist}
+    \umluniassoc[arg=contains, pos=0.5]{Wishlist}{Product}
+\end{tikzpicture}
+}
+\end{center}
+
+\section{Diagramme de Séquence : Passage de Commande}
+Ce diagramme décrit les interactions lors de la validation d'une commande.
+
+\begin{center}
+\begin{tikzpicture}
+    \begin{umlseqdiag}
+        \umlactor{Client}
+        \umlboundary{CartView}
+        \umlcontrol{CheckoutController}
+        \umldatabase{Database}
+
+        \begin{umlcall}[op={Valider Panier}]{Client}{CartView}
+            \begin{umlcall}[op={processCheckout()}]{CartView}{CheckoutController}
+                \begin{umlcall}[op={createOrder()}]{CheckoutController}{Database}
+                    \umlrest{Commande enregistrée}
+                \end{umlcall}
+                \begin{umlcall}[op={updateStock()}]{CheckoutController}{Database}
+                    \umlrest{Stock mis à jour}
+                \end{umlcall}
+            \end{umlcall}
+        \end{umlcall}
+    \end{umlseqdiag}
+\end{tikzpicture}
+\end{center}
+
+% --- Chapter 4: Réalisation et Interfaces ---
+\chapter{Réalisation et Interfaces}
+Dans cette section, nous présentons les interfaces utilisateur de l'application.
+
+\section{Page d'accueil}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshots/home_page.png}
+    \caption{Interface de la page d'accueil}
+\end{figure}
+
+\section{Catalogue des Produits}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshots/products_list.png}
+    \caption{Affichage des produits}
+\end{figure}
+
+\section{Panier et Paiement}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshots/cart_page.png}
+    \caption{Gestion du panier d'achat}
+\end{figure}
+
+\section{Interface Administration}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshots/admin_dashboard.png}
+    \caption{Tableau de bord de l'administrateur}
+\end{figure}
+
+% --- Chapter 5: Conclusion ---
+\chapter{Conclusion}
+Le projet a permis de mettre en place une plateforme e-commerce robuste et fonctionnelle. L'utilisation de Laravel a facilité la gestion des données et la sécurisation des transactions. Ce travail peut être étendu par l'ajout de modes de paiement réels et d'un système de notifications.
+
+\end{document}
